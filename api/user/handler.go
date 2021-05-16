@@ -2,7 +2,6 @@ package user
 
 import (
 	. "bibo.api/api/rest"
-	"fmt"
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,6 +11,39 @@ import (
 )
 
 var dao = UserDAO{}
+
+func AuthenticateUser (c echo.Context) error {
+	loginUser := new(User)
+
+	if err := c.Bind(loginUser); err != nil {
+		return ResponseBadRequest(c, map[string]interface{} {})
+	}
+
+	user, err := dao.GetByEmail(loginUser.Email)
+
+	if err != nil {
+		return ResponseInternalError(c)
+	}
+
+	if user.Id == primitive.NilObjectID {
+		return ResponseNotFound(c)
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(loginUser.Password))
+
+	if err != nil {
+		return ResponseForbidden(c)
+	}
+
+	token, err := generateUserToken(&user)
+	formattedResponse := map[string]interface{}{"token": token}
+
+	if err != nil {
+		return ResponseInternalError(c)
+	}
+
+	return ResponseSuccess(c, formattedResponse)
+}
 
 func CreateUser(c echo.Context) error {
 	user := new(User)
@@ -25,7 +57,7 @@ func CreateUser(c echo.Context) error {
 	passHash, err := encryptPassword(user.Password)
 
 	if err != nil {
-		fmt.Println(err) // TODO: Error handling
+		return ResponseInternalError(c)
 	}
 
 	user.PasswordHash = passHash

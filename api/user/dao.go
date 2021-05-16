@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -46,4 +47,14 @@ func (dao *UserDAO) Insert(user *User) error {
 	collection := dao.Connect()
 	_, err := collection.InsertOne(context.TODO(), user)
 	return err
+}
+
+func (dao *UserDAO) GetByEmail(email string) (User, error) {
+	defer dao.Disconnect()
+
+	var user User
+
+	collection := dao.Connect()
+	err := collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+	return user, err
 }
