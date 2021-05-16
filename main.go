@@ -42,7 +42,7 @@ func serve() {
 
 	userRoute := e.Group("/user")
 	userRoute.POST("/create", userHandler.CreateUser)
-
+	userRoute.POST("/login", userHandler.AuthenticateUser)
 
 	e.GET("/test", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Kek")
