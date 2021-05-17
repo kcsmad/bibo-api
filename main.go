@@ -1,12 +1,11 @@
 package main
 
 import (
+	bookHandler "bibo.api/api/book"
 	userHandler "bibo.api/api/user"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"log"
-	"net/http"
 	"os"
 )
 
@@ -34,19 +33,15 @@ func startup()  {
 func serve() {
 	e := echo.New()
 
-	bookRoute := e.Group("/books")
-
-	bookRoute.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-		return key == os.Getenv("AUTH_SECRET"), nil
-	}))
+	e.GET("/books", bookHandler.FindAll)
+	e.POST("/book", bookHandler.CreateBook)
+	e.GET("/book/:isbn", bookHandler.FindOne)
+	e.PUT("/book/:isbn", bookHandler.Update)
+	//e.DELETE("/book/:isbn", bookHandler.Delete)
 
 	userRoute := e.Group("/user")
 	userRoute.POST("/create", userHandler.CreateUser)
 	userRoute.POST("/login", userHandler.AuthenticateUser)
-
-	e.GET("/test", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Kek")
-	})
 
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
