@@ -48,7 +48,7 @@ func AuthenticateUser (c echo.Context) error {
 func CreateUser(c echo.Context) error {
 	user := new(User)
 	if err := c.Bind(user); err != nil {
-		return err
+		return ResponseInternalError(c)
 	}
 
 	user.Id = primitive.NewObjectID()
