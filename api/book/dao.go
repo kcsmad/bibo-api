@@ -108,3 +108,11 @@ func (dao *BookDAO) Update(book Book) error {
 	_, err := collection.UpdateByID(context.TODO(), book.Id, bson.D{{Key: "$set", Value: &book}})
 	return err
 }
+
+func (dao *BookDAO) Delete(book Book) error {
+	defer dao.Disconnect()
+
+	collection := dao.Connect()
+	_, err := collection.DeleteOne(context.TODO(), &book)
+	return err
+}

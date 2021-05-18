@@ -76,3 +76,25 @@ func Update(c echo.Context) error {
 
 	return ResponseSuccess(c, newBook)
 }
+
+func Remove(c echo.Context) error {
+	isbn, err := strconv.Atoi(c.Param("isbn"))
+
+	if err != nil {
+		return ResponseBadRequest(c, "ISBN Invalido")
+	}
+
+	book, err := dao.GetByISBN(isbn)
+
+	if err != nil {
+		return ResponseInternalError(c)
+	}
+
+	err = dao.Delete(book)
+
+	if err != nil {
+		return ResponseInternalError(c)
+	}
+
+	return ResponseNoContent(c)
+}

@@ -37,7 +37,7 @@ func serve() {
 	e.POST("/book", bookHandler.CreateBook)
 	e.GET("/book/:isbn", bookHandler.FindOne)
 	e.PUT("/book/:isbn", bookHandler.Update)
-	//e.DELETE("/book/:isbn", bookHandler.Delete)
+	e.DELETE("/book/:isbn", bookHandler.Remove)
 
 	userRoute := e.Group("/user")
 	userRoute.POST("/create", userHandler.CreateUser)
