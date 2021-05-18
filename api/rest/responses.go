@@ -13,6 +13,10 @@ func ResponseCreated (c echo.Context, payload interface{}) error {
 	return c.JSON(http.StatusCreated, payload)
 }
 
+func ResponseNoContent (c echo.Context) error {
+	return c.JSON(http.StatusNoContent, "")
+}
+
 func ResponseBadRequest(c echo.Context, payload interface{}) error {
 	return c.JSON(http.StatusBadRequest, payload)
 }
