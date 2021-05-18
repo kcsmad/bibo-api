@@ -5,6 +5,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type Book struct {
 	Id primitive.ObjectID `json:"-" bson:"_id"`
 	Isbn int `json:"isbn" bson:"isbn"`
+	Isbn10 int `json:"isbn_10" bson:"isbn_10"`
 	Title string `json:"title" bson:"title"`
 	AuthorName []string `json:"author_name" bson:"author_name"`
 	ArtistName []string `json:"artist_name" bson:"artist_name"`
