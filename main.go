@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	if os.Getenv("APP_ENV") != "production" {
+	if os.Getenv("APP_ENV") == "dev" {
 		setupEnv()
 	}
 
