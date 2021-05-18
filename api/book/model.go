@@ -10,6 +10,7 @@ type Book struct {
 	AuthorName []string `json:"author_name" bson:"author_name"`
 	ArtistName []string `json:"artist_name" bson:"artist_name"`
 	Type string `json:"book_type" bson:"book_type"`
+	Cover []string `json:"covers" bson:"covers"`
 	PublisherName string `json:"publisher_name" bson:"publisher_name"`
 	PublishYear int `json:"publish_year" bson:"publish_year"`
 	Genres []string `json:"genres" bson:"genres"`
