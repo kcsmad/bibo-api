@@ -5,15 +5,15 @@ import (
 	"net/http"
 )
 
-func ResponseSuccess (c echo.Context, payload interface{}) error {
+func ResponseSuccess(c echo.Context, payload interface{}) error {
 	return c.JSON(http.StatusOK, payload)
 }
 
-func ResponseCreated (c echo.Context, payload interface{}) error {
+func ResponseCreated(c echo.Context, payload interface{}) error {
 	return c.JSON(http.StatusCreated, payload)
 }
 
-func ResponseNoContent (c echo.Context) error {
+func ResponseNoContent(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, "")
 }
 

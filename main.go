@@ -1,47 +1,79 @@
 package main
 
 import (
-	bookHandler "bibo.api/api/book"
-	userHandler "bibo.api/api/user"
+	mw "bibo.api/api/middlewares"
+	"bibo.api/api/v1/books"
+	"bibo.api/api/v1/db"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"log"
+	emw "github.com/labstack/echo/v4/middleware"
+	log "github.com/sirupsen/logrus"
 	"os"
 )
 
+var dbInstance = db.Repository{}
+var dbURL = ""
+
+var mainLogger = log.WithFields(log.Fields{
+	"[domain]": "[Main]",
+	"[env]":    "[" + os.Getenv("APP_ENV") + "]",
+})
+
 func main() {
-	if os.Getenv("APP_ENV") == "dev" {
-		setupEnv()
+	setupEnv()
+
+	dbInstance.Connect(dbURL)
+	defer dbInstance.Disconnect()
+
+	echoInstance := setupEcho()
+	v1Route := echoInstance.Group("/v1")
+	setupBookHandler(v1Route)
+
+	serve(echoInstance)
+}
+
+func setupBookHandler(e *echo.Group) {
+	bookDAO := books.DAO{
+		Repo: &dbInstance,
 	}
 
-	startup()
+	bookHandler := books.Handler{
+		DAO: bookDAO,
+	}
+
+	route := e.Group("/books")
+	route.GET("", bookHandler.FindAll)
+	route.GET("/", bookHandler.FindAll)
 }
 
 func setupEnv() {
-	err := godotenv.Load()
+	if os.Getenv("APP_ENV") != "production" {
+		err := godotenv.Load()
 
-	if err != nil {
-		log.Fatal("Error Loading env file.")
+		if err != nil {
+			mainLogger.WithFields(log.Fields{
+				"[method]": "[SetupEnv]",
+				"[action]": "[Load Env File]",
+			}).Fatal(err.Error())
+		}
+
+		dbURL = os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASS") +
+			"@tcp(" + os.Getenv("DB_HOST") + "" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME")
+	} else {
+		dbURL = os.Getenv("CLEARDB_URL")
 	}
 }
 
-func startup()  {
-	// TODO: New Relic Configuration
-	serve()
+func setupEcho() *echo.Echo {
+	e := echo.New()
+	e.Use(emw.CORS())
+	e.Use(emw.Recover())
+	e.Use(mw.SetupNewRelic(os.Getenv("NR_APP_NAME"), os.Getenv("NR_LICENSE_KEY")))
+	e.Use(mw.Logrus())
+
+	return e
 }
 
-func serve() {
-	e := echo.New()
-
-	e.GET("/books", bookHandler.FindAll)
-	e.POST("/book", bookHandler.CreateBook)
-	e.GET("/book/:isbn", bookHandler.FindOne)
-	e.PUT("/book/:isbn", bookHandler.Update)
-	e.DELETE("/book/:isbn", bookHandler.Remove)
-
-	userRoute := e.Group("/user")
-	userRoute.POST("/create", userHandler.CreateUser)
-	userRoute.POST("/login", userHandler.AuthenticateUser)
-
+func serve(e *echo.Echo) {
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
